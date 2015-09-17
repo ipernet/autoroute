@@ -1,0 +1,12 @@
+{
+	"name": "krds/kite/autoroute",
+	"type": "library",
+	"description": "Kite auto routing resolver",
+	"keywords": ["library"],
+	"license": "MIT",
+	"autoload": {
+		"psr-4": {
+			"KRDS\\Kite\\Routing\\" : "src/"
+		}
+	}
+}
