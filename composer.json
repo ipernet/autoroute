@@ -1,5 +1,5 @@
 {
-	"name": "krds/kite/autoroute",
+	"name": "kite/autoroute",
 	"type": "library",
 	"description": "Kite auto routing resolver",
 	"keywords": ["library"],
