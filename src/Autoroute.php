@@ -8,6 +8,7 @@ class Autoroute
     protected $psr4Prefix;
     protected $psr4Paths;
 
+    protected $phpExtension		=	'php';
     protected $defaultController	=	'Index';
     protected $defaultAction		=	'index';
     protected $segmentFilterPattern	=	'#^[a-z0-9]+$#i';
@@ -20,8 +21,11 @@ class Autoroute
 	if( ! empty($options['default_action']))
 	    $this->defaultAction	=	$options['default_action'];
 
-	if( ! empty($options['defaultAction']))
+	if( ! empty($options['segment_pattern']))
 	    $this->segmentFilterPattern	=	$options['segment_pattern'];
+
+	if( ! empty($options['php_extension']))
+	    $this->phpExtension		=	$options['php_extension'];
 
 	$this->pathInfo		=	$pathInfo;
 	$this->psr4Prefix	=	trim($psr4Prefix, '\\').'\\';
@@ -58,13 +62,13 @@ class Autoroute
 	    if($count === 0)
 		$segments[]	=	$this->defaultController;
 
-	    $sgti	=	implode('\\', $segments);
+	    $sgti	=	implode(DIRECTORY_SEPARATOR, $segments);
 
 	    $found	=	false;
 
 	    foreach($this->psr4Paths as $path)
 	    {
-		if(is_dir($path.$sgti))
+		if(is_dir($path.DIRECTORY_SEPARATOR.$sgti))
 		{
 		    $segments[]	=	$this->defaultController;
 		    $found	=	true;
@@ -76,7 +80,7 @@ class Autoroute
 	    {
 		foreach($this->psr4Paths as $path)
 		{
-		    if(is_file($path.$sgti.EXT))
+		    if(is_file($path.DIRECTORY_SEPARATOR.$sgti.'.'.$this->phpExtension))
 		    {
 			$found	=	true;
 			break;
@@ -108,4 +112,3 @@ class Autoroute
 	});
     }
 }
-
