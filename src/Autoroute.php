@@ -90,7 +90,7 @@ class Autoroute
 
 	    if( ! $found)
 	    {
-		$options['defaultAction']	=	array_pop($segments);
+		$this->defaultAction	=	array_pop($segments);
 
 		if(empty($segments))
 		    $segments[]	=	$this->defaultController;
