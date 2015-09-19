@@ -37,82 +37,83 @@ class Autoroute
     public function resolve()
     {
         // Validate segments names
-	$segments	=	explode('/', $this->pathInfo);
-	$segments	=	$this->filterSegments($segments);
-	$segmentsCase	=	$segments;
-	
-	// PSR-4 => ucfirst() all segments
-	array_walk($segments, function(&$v, $k)
-	{
-	    $v	=	ucfirst(strtolower($v));
-	});
+		$segments		=	$this->filterSegments(explode('/', $this->pathInfo));
+		$segmentsCase	=	$segments;
 
-	$count	=	count($segments);
+		// PSR-4 => ucfirst() all segments
+		array_walk($segments, function(&$v, $k)
+		{
+			$v	=	ucfirst(strtolower($v));
+		});
 
-	// See Doc#resolving
-	if($count === 1)
-	{
-	    foreach($this->psr4Paths as $path)
-	    {
-		if(is_dir($path.'/'.current($segments)))
-		{
-			$segments[]	=	$this->defaultController;
-			break;
-		}
-	    }
-	}
-	else
-	{
-		if($count === 0)
-			$segments[]	=	$this->defaultController;
-		
-		$sgti	=	implode(DIRECTORY_SEPARATOR, $segments);
-		
-		$found	=	false;
-		
-		foreach($this->psr4Paths as $path)
-		{
-			if(is_dir($path.DIRECTORY_SEPARATOR.$sgti))
-			{
-			    $segments[]	=	$this->defaultController;
-			    $found	=	true;
-			    break;
-			}
-		}
-		
-		if( ! $found)
+		$count	=	count($segments);
+
+		// See Doc#resolving
+		if($count === 1)
 		{
 			foreach($this->psr4Paths as $path)
 			{
-			    if(is_file($path.DIRECTORY_SEPARATOR.$sgti.'.'.$this->phpExtension))
-			    {
-				$found	=	true;
-				break;
-			    }
+				if(is_dir($path.'/'.current($segments)))
+				{
+					$segments[]	=	$this->defaultController;
+					break;
+				}
 			}
 		}
-		
-		if( ! $found)
+		else
 		{
-			$this->defaultAction	=	array_pop($segmentsCase);
-			
-			if(empty($segments))
-			    $segments[]	=	$this->defaultController;
-		}
-	}
+			if($count === 0)
+				$segments[]	=	$this->defaultController;
 
-	return [
-	    'path'	=>	$this->pathInfo,
-	    'class'	=>	$this->psr4Prefix.implode('\\', $segments),
-	    'action'	=>	$this->defaultAction
-	];
+			$sgti	=	implode(DIRECTORY_SEPARATOR, $segments);
+
+			$found	=	false;
+
+			foreach($this->psr4Paths as $path)
+			{
+				if(is_dir($path.DIRECTORY_SEPARATOR.$sgti))
+				{
+					$segments[]	=	$this->defaultController;
+					$found	=	true;
+					break;
+				}
+			}
+
+			if( ! $found)
+			{
+				foreach($this->psr4Paths as $path)
+				{
+					if(is_file($path.DIRECTORY_SEPARATOR.$sgti.'.'.$this->phpExtension))
+					{
+					$found	=	true;
+					break;
+					}
+				}
+			}
+
+			if( ! $found)
+			{
+				$this->defaultAction	=	array_pop($segmentsCase);
+				
+				array_pop($segments);
+
+				if(empty($segments))
+					$segments[]	=	$this->defaultController;
+			}
+		}
+
+		return [
+			'path'		=>	$this->pathInfo,
+			'class'		=>	$this->psr4Prefix.implode('\\', $segments),
+			'action'	=>	$this->defaultAction
+		];
     }
 
     protected function filterSegments($segments)
     {
-	return array_filter($segments, function($v)
-	{
-	    return ! (empty($v) || preg_match($this->segmentFilterPattern, $v) !== 1);
-	});
+		return array_filter($segments, function($v)
+		{
+			return ! (empty($v) || preg_match($this->segmentFilterPattern, $v) !== 1);
+		});
     }
 }
