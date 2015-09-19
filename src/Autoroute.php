@@ -37,13 +37,14 @@ class Autoroute
     public function resolve()
     {
         // Validate segments names
-	$segments	=	explode('/', strtolower($this->pathInfo));
+	$segments	=	explode('/', $this->pathInfo);
 	$segments	=	$this->filterSegments($segments);
-
+	$segmentsCase	=	$segments;
+	
 	// PSR-4 => ucfirst() all segments
 	array_walk($segments, function(&$v, $k)
 	{
-	    $v	=	ucfirst($v);
+	    $v	=	ucfirst(strtolower($v));
 	});
 
 	$count	=	count($segments);
@@ -54,47 +55,50 @@ class Autoroute
 	    foreach($this->psr4Paths as $path)
 	    {
 		if(is_dir($path.'/'.current($segments)))
-		    $segments[]	=	$this->defaultController;
+		{
+			$segments[]	=	$this->defaultController;
+			break;
+		}
 	    }
 	}
 	else
 	{
-	    if($count === 0)
-		$segments[]	=	$this->defaultController;
-
-	    $sgti	=	implode(DIRECTORY_SEPARATOR, $segments);
-
-	    $found	=	false;
-
-	    foreach($this->psr4Paths as $path)
-	    {
-		if(is_dir($path.DIRECTORY_SEPARATOR.$sgti))
-		{
-		    $segments[]	=	$this->defaultController;
-		    $found	=	true;
-		    break;
-		}
-	    }
-
-	    if( ! $found)
-	    {
+		if($count === 0)
+			$segments[]	=	$this->defaultController;
+		
+		$sgti	=	implode(DIRECTORY_SEPARATOR, $segments);
+		
+		$found	=	false;
+		
 		foreach($this->psr4Paths as $path)
 		{
-		    if(is_file($path.DIRECTORY_SEPARATOR.$sgti.'.'.$this->phpExtension))
-		    {
-			$found	=	true;
-			break;
-		    }
+			if(is_dir($path.DIRECTORY_SEPARATOR.$sgti))
+			{
+			    $segments[]	=	$this->defaultController;
+			    $found	=	true;
+			    break;
+			}
 		}
-	    }
-
-	    if( ! $found)
-	    {
-		$this->defaultAction	=	array_pop($segments);
-
-		if(empty($segments))
-		    $segments[]	=	$this->defaultController;
-	    }
+		
+		if( ! $found)
+		{
+			foreach($this->psr4Paths as $path)
+			{
+			    if(is_file($path.DIRECTORY_SEPARATOR.$sgti.'.'.$this->phpExtension))
+			    {
+				$found	=	true;
+				break;
+			    }
+			}
+		}
+		
+		if( ! $found)
+		{
+			$this->defaultAction	=	array_pop($segmentsCase);
+			
+			if(empty($segments))
+			    $segments[]	=	$this->defaultController;
+		}
 	}
 
 	return [
